@@ -28,6 +28,10 @@ This script uses the "sudo" privilege escalation command, and so it should be ru
        d. validate that it is possible to connect to Oracle SQL*Plus under the Linux OS account for Azure VM Backup with the SYSBACKUP role
        e. validate that the AZMESSAGE stored procedure exists and is VALID
 
+Please note that the validations within the database (i.e. existence and validity of AZMESSAGE procedure, etc) are performed using the OS account specified in the "linux_user" attribute of the configuration file, using Oracle external OS authentication through the SYSBACKUP role.
+
+In other words, successful validation with this script includes database connections using the same authentication methods used by Azure VM Backup through the Azure Linux agent (waagent).
+
 ### Command-line Parameters
     (none)
        
