@@ -33,7 +33,7 @@ Please note that the validations within the database (i.e. existence and validit
 In other words, successful validation with this script includes database connections using the same authentication methods used by Azure VM Backup through the Azure Linux agent (waagent).
 
 ### Command-line Parameters
-    (none)
+    Any command-line parameter will place the script into "verbose" mode.  Silent mode is the default if no command-line parameters are specified.
        
 ### Return status
     0 - success
