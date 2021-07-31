@@ -42,7 +42,8 @@
 #
 # Prerequisites:
 #
-#	Full "sudo" permissions are *required* by this script.
+#	Full "sudo" permissions are *required* in the Linux OS account which runs
+#	this script.
 #
 #	This script should be run under the administrative Linux OS account
 #	for this Azure VM (which is granted full "sudo" permissions at VM creation),
@@ -76,8 +77,9 @@
 # Modifications:
 #	TGorman 30jun21 v1.0	initially written
 #	TGorman 30jun21 v1.1	silent mode (no output) default; add verbose mode
+#	TGorman	30jul21	v1.2	verbose mode made the default; terse by parm only
 #================================================================================
-_scriptVersion="1.1"
+_scriptVersion="1.2"
 #
 #--------------------------------------------------------------------------------
 # Create shell function to display messages in "verbose" mode;  "silent" mode is
@@ -90,12 +92,12 @@ _verbose_msg()
 		echo "`date` - INFO: $1"
 	fi
 }
-_verboseMode="false"
+_verboseMode="true"
 if (( $# == 1 ))
 then
-	_verboseMode="true"
-	_verbose_msg "verbose mode enabled, script version ${_scriptVersion}"
+	_verboseMode="false"
 fi
+_verbose_msg "verbose mode enabled, script version ${_scriptVersion}"
 #
 #--------------------------------------------------------------------------------
 # Set program variables...
@@ -108,7 +110,7 @@ _confFile=${_confDir}/workload.conf
 # Verify that the directory in which the Azure VM Backup configuration file
 # resides exists...
 #--------------------------------------------------------------------------------
-_verbose_msg "verify existence of directory \"${_confDir}\""
+_verbose_msg "Configuration file: verify existence of directory \"${_confDir}\""
 if [ ! -d ${_confDir} ]
 then
 	echo "`date` - FAIL: directory \"${_confDir}\" not found"
@@ -118,7 +120,7 @@ fi
 #--------------------------------------------------------------------------------
 # Verify that the Azure VM Backup configuration file exists...
 #--------------------------------------------------------------------------------
-_verbose_msg "verify existence of file \"${_confFile}\""
+_verbose_msg "Configuration file: verify existence of file \"${_confFile}\""
 if [ ! -f ${_confFile} ]
 then
 	echo "`date` - FAIL: Azure VM Backup configuration file \"${_confFile}\" not found"
@@ -128,7 +130,7 @@ fi
 #--------------------------------------------------------------------------------
 # Verify the first line of the Azure VM Backup configuration file...
 #--------------------------------------------------------------------------------
-_verbose_msg "verify header of file \"${_confFile}\""
+_verbose_msg "Configuration file: verify header of file \"${_confFile}\""
 _confFileHdr=`head -1 ${_confFile} | awk '{print $1}'`
 if [[ "${_confFileHdr}" != "[workload]" ]]
 then
@@ -140,7 +142,7 @@ fi
 # Verify the specification of the "workload_name" attribute in the Azure VM
 # Backup configuration file...
 #--------------------------------------------------------------------------------
-_verbose_msg "verify \"workload_name\" attribute in file \"${_confFile}\""
+_verbose_msg "Configuration file: verify \"workload_name\" attribute in file \"${_confFile}\""
 _workloadNameSpec=`grep -E "^workload_name\s+=\s+oracle$" ${_confFile}`
 if [[ "${_workloadNameSpec}" = "" ]]
 then
@@ -158,7 +160,7 @@ fi
 # Verify the specification of the "configuration_path" attribute in the Azure VM
 # Backup configuration file...
 #--------------------------------------------------------------------------------
-_verbose_msg "verify \"configuration_path\" attribute in file \"${_confFile}\""
+_verbose_msg "Configuration file: verify \"configuration_path\" attribute in file \"${_confFile}\""
 _confPathSpec=`grep -E "^configuration_path\s+=\s+" ${_confFile}`
 if [[ "${_confPathSpec}" = "" ]]
 then
@@ -181,7 +183,7 @@ fi
 # Verify the specification of the "timeout" attribute in the Azure VM Backup
 # configuration file...
 #--------------------------------------------------------------------------------
-_verbose_msg "verify \"timeout\" attribute in file \"${_confFile}\""
+_verbose_msg "Configuration file: verify \"timeout\" attribute in file \"${_confFile}\""
 _timeoutSpec=`grep -E "^timeout\s+=\s+[0-9][0-9][0-9]*$" ${_confFile}`
 if [[ "${_timeoutSpec}" = "" ]]
 then
@@ -205,7 +207,7 @@ fi
 # configuration file.  Also, verify that the Linux OS account exists, and that
 # the OS group primary for the user account is recorded for later verification...
 #--------------------------------------------------------------------------------
-_verbose_msg "verify \"linux_user\" attribute in file \"${_confFile}\""
+_verbose_msg "Configuration file: verify \"linux_user\" attribute in file \"${_confFile}\""
 _linuxUserSpec=`grep -E "^linux_user\s+=\s+" ${_confFile}`
 if [[ "${_linuxUserSpec}" = "" ]]
 then
@@ -244,7 +246,7 @@ _osGrpName=`echo ${_grpSpec} | awk -F: '{print $1}'`
 # "/var/lib/waagent" directory, which is accessible only by "root".  If possible,
 # use "sudo" to verify the presence of the files...
 #--------------------------------------------------------------------------------
-_verbose_msg "verify existence of pre-script file within root-owned directory \"/var/lib/waagent\""
+_verbose_msg "Azure Linux agent: verify existence of pre-script within directory \"/var/lib/waagent\""
 _preScriptFile=`sudo -n find /var/lib/waagent -name preOracleMaster.sql 2> /dev/null`
 if (( $? != 0 ))
 then
@@ -257,7 +259,7 @@ else
 		typeset -i _errCnt=${_errCnt}+1
 	fi
 fi
-_verbose_msg "verify existence of post-script file within root-owned directory \"/var/lib/waagent\""
+_verbose_msg "Azure Linux agent: verify existence of post-script within directory \"/var/lib/waagent\""
 _postScriptFile=`sudo -n find /var/lib/waagent -name postOracleMaster.sql 2> /dev/null`
 if (( $? != 0 ))
 then
@@ -309,7 +311,7 @@ do
 	# Verify the ORACLE_HOME directory and the "rdbms/lib" subdirectories in
 	# which the source file "config.c" resides...
 	#------------------------------------------------------------------------
-	_verbose_msg "Validate ORACLE_HOME directory \"${_oraHome}\" for database \"${_oraSid}\""
+	_verbose_msg "DB instance \"${_oraSid}\": validate ORACLE_HOME directory \"${_oraHome}\""
 	if [ ! -d ${_oraHome} ]
 	then
 		echo "`date` - FAIL: Oracle configuration file \"${_confPath}\" - directory \"${_oraHome}\" not found"
@@ -332,7 +334,7 @@ do
 	# which the configure "linux_user" belongs matches the Linux OS group
 	# representing the Oracle SYSBACKUP database role...
 	#------------------------------------------------------------------------
-	_verbose_msg "Verify SYSBACKUP group in \"${_oraHome}/rdbms/lib/config.c\" for \"${_oraSid}\""
+	_verbose_msg "DB instance \"${_oraSid}\": verify SYSBACKUP group in \"${_oraHome}/rdbms/lib/config.c\""
 	_sysbackupSpec=`grep "^#define SS_BKP_GRP " ${_oraHome}/rdbms/lib/config.c`
 	if [[ "${_sysbackupSpec}" = "" ]]
 	then
@@ -350,7 +352,7 @@ do
 	# Run the temporary SQL*Plus script while connected as SYSBACKUP to
 	# validate the database setup for Azure VM Backup...
 	#------------------------------------------------------------------------
-	_verbose_msg "Connect \"${_linuxUser}\" OS account as \"SYSBACKUP\" to validate required objects in \"${_oraSid}\""
+	_verbose_msg "DB instance \"${_oraSid}\": connect externally through \"${_linuxUser}\" OS account as \"SYSBACKUP\""
 	sudo -n su - ${_linuxUser} -c "export ORACLE_SID=${_oraSid}; export ORACLE_HOME=${_oraHome}; export PATH=${oraHome}/bin:\${PATH}; ${_oraHome}/bin/sqlplus -S -R 2 /nolog @${_tmpSqlScriptFile} > ${_tmpSqlOutFile} 2>&1"
 	case $? in
 		0)	;;

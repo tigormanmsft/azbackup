@@ -41,35 +41,36 @@ Any command-line parameter will place the script into "verbose" mode.  Silent mo
 
 ## Examples
 
-Running the script in the default silent mode and checking the return status...
+An example of running the script in the default "verbose" mode, no command-line parameters, and then checking the return status...
 
-    [adminuser@ora-bkp-vm01 ]$ ./azbackup_verify.sh
+
+    [adminuser@ora-bkp-vm01 tmp]$ ./azbackup_verify.sh
+    Sat Jul 31 18:06:27 UTC 2021 - INFO: verbose mode enabled, script version 1.2
+    Sat Jul 31 18:06:27 UTC 2021 - INFO: Configuration file: verify existence of directory "/etc/azure"
+    Sat Jul 31 18:06:27 UTC 2021 - INFO: Configuration file: verify existence of file "/etc/azure/workload.conf"
+    Sat Jul 31 18:06:27 UTC 2021 - INFO: Configuration file: verify header of file "/etc/azure/workload.conf"
+    Sat Jul 31 18:06:27 UTC 2021 - INFO: Configuration file: verify "workload_name" attribute in file "/etc/azure/workload.conf"
+    Sat Jul 31 18:06:27 UTC 2021 - INFO: Configuration file: verify "configuration_path" attribute in file "/etc/azure/workload.conf"
+    Sat Jul 31 18:06:27 UTC 2021 - INFO: Configuration file: verify "timeout" attribute in file "/etc/azure/workload.conf"
+    Sat Jul 31 18:06:27 UTC 2021 - INFO: Configuration file: verify "linux_user" attribute in file "/etc/azure/workload.conf"
+    Sat Jul 31 18:06:27 UTC 2021 - INFO: Azure Linux agent: verify existence of pre-script within directory "/var/lib/waagent"
+    Sat Jul 31 18:06:27 UTC 2021 - INFO: Azure Linux agent: verify existence of post-script within directory "/var/lib/waagent"
+    Sat Jul 31 18:06:27 UTC 2021 - INFO: DB instance "oradb01": validate ORACLE_HOME directory "/u01/app/oracle/product/19.0.0/dbhome_1"
+    Sat Jul 31 18:06:27 UTC 2021 - INFO: DB instance "oradb01": verify SYSBACKUP group in "/u01/app/oracle/product/19.0.0/dbhome_1/rdbms/lib/config.c"
+    Sat Jul 31 18:06:27 UTC 2021 - INFO: DB instance "oradb01": connect externally through "azbackup" OS account as "SYSBACKUP"
+    Sat Jul 31 18:06:29 UTC 2021 - INFO: validated successfully
     [adminuser@ora-bkp-vm01 ]$ echo $?
     0
     [adminuser@ora-bkp-vm01 ]$ 
 
 
-Running the script in "verbose" mode by specifying any command-line parameter, and then checking the return status...
+Now, running the script in the silent "terse" mode and again checking the return status...
 
-    [adminuser@ora-bkp-vm01 ]$ ./azbackup_verify.sh verbose
-    Wed Jul 14 18:06:34 UTC 2021 - INFO: verbose mode enabled
-    Wed Jul 14 18:06:34 UTC 2021 - INFO: verify existence of directory "/etc/azure"
-    Wed Jul 14 18:06:34 UTC 2021 - INFO: verify existence of file "/etc/azure/workload.conf"
-    Wed Jul 14 18:06:34 UTC 2021 - INFO: verify header of file "/etc/azure/workload.conf"
-    Wed Jul 14 18:06:34 UTC 2021 - INFO: verify "workload_name" attribute in file "/etc/azure/workload.conf"
-    Wed Jul 14 18:06:34 UTC 2021 - INFO: verify "configuration_path" attribute in file "/etc/azure/workload.conf"
-    Wed Jul 14 18:06:34 UTC 2021 - INFO: verify "timeout" attribute in file "/etc/azure/workload.conf"
-    Wed Jul 14 18:06:34 UTC 2021 - INFO: verify "linux_user" attribute in file "/etc/azure/workload.conf"
-    Wed Jul 14 18:06:34 UTC 2021 - INFO: verify existence of pre-script file within root-owned directory "/var/lib/waagent"
-    Wed Jul 14 18:06:34 UTC 2021 - INFO: verify existence of post-script file within root-owned directory "/var/lib/waagent"
-    Wed Jul 14 18:06:34 UTC 2021 - INFO: Validate ORACLE_HOME directory "/u01/app/oracle/product/19.0.0/dbhome_1" for database "oradb01"
-    Wed Jul 14 18:06:34 UTC 2021 - INFO: Verify SYSBACKUP group in "/u01/app/oracle/product/19.0.0/dbhome_1/rdbms/lib/config.c" for "oradb01"
-    Wed Jul 14 18:06:34 UTC 2021 - INFO: Connect "azbackup" OS account as "SYSBACKUP" to validate required objects in "oradb01"
-    Wed Jul 14 18:06:35 UTC 2021 - INFO: validated successfully
+
+    [adminuser@ora-bkp-vm01 ]$ ./azbackup_verify.sh terse
     [adminuser@ora-bkp-vm01 ]$ echo $?
     0
     [adminuser@ora-bkp-vm01 ]$ 
+
 
 Any detected failure conditions will include the word "FAIL" in place of the word "INFO" after the timestamp.
-
-Please share these output messages with Microsoft personnel when troubleshooting issues with Azure VM Backups for Oracle databases?
