@@ -78,8 +78,9 @@
 #	TGorman 30jun21 v1.0	initially written
 #	TGorman 30jun21 v1.1	silent mode (no output) default; add verbose mode
 #	TGorman	30jul21	v1.2	verbose mode made the default; terse by parm only
+#	TGorman	18aug21	v1.3	clarify errmsg when Oracle instance down
 #================================================================================
-_scriptVersion="1.2"
+_scriptVersion="1.3"
 #
 #--------------------------------------------------------------------------------
 # Create shell function to display messages in "verbose" mode;  "silent" mode is
@@ -353,7 +354,7 @@ do
 	# validate the database setup for Azure VM Backup...
 	#------------------------------------------------------------------------
 	_verbose_msg "DB instance \"${_oraSid}\": connect externally through \"${_linuxUser}\" OS account as \"SYSBACKUP\""
-	sudo -n su - ${_linuxUser} -c "export ORACLE_SID=${_oraSid}; export ORACLE_HOME=${_oraHome}; export PATH=${oraHome}/bin:\${PATH}; ${_oraHome}/bin/sqlplus -S -R 2 /nolog @${_tmpSqlScriptFile} > ${_tmpSqlOutFile} 2>&1"
+	sudo -n su - ${_linuxUser} -c "if [[ \"`ps -eaf | grep pmon | grep -v grep`\" = \"\" ]]; then exit 9; fi; export ORACLE_SID=${_oraSid}; export ORACLE_HOME=${_oraHome}; export PATH=${oraHome}/bin:\${PATH}; ${_oraHome}/bin/sqlplus -S -R 2 /nolog @${_tmpSqlScriptFile} > ${_tmpSqlOutFile} 2>&1"
 	case $? in
 		0)	;;
 		1)	echo "`date` - FAIL: Oracle SQL*Plus SET command failed in \"${_oraSid}\" database instance"
@@ -365,6 +366,9 @@ do
 		3)	echo "`date` - FAIL: AZMESSAGE not found in \"${_oraSid}\" database instance"
 			typeset -i _errCnt=${_errCnt}+1
 			;;
+		9)	echo "`date` - FAIL: database instance \"${_oraSid}\" not running"
+			typeset -i _errCnt=${_errCnt}+1
+			;;
 		*)	echo "`date` - FAIL: unknown SQL*Plus error in \"${_oraSid}\" database instance"
 			typeset -i _errCnt=${_errCnt}+1
 			;;
@@ -374,11 +378,15 @@ do
 	# Check whether the appropriate message was generated indicating that the
 	# AZMESSAGE stored procedure is valid or not...
 	#------------------------------------------------------------------------
-	grep 'azmessage=VALID' ${_tmpSqlOutFile} > /dev/null 2>&1
-	if (( $? != 0 ))
+	grep 'azmessage=' ${_tmpSqlOutFile} > /dev/null 2>&1
+	if (( $? == 0 ))
 	then
-		echo "`date` - FAIL: AZMESSAGE not VALID in \"${_oraSid}\" database instance"
-		typeset -i _errCnt=${_errCnt}+1
+		grep 'azmessage=VALID' ${_tmpSqlOutFile} > /dev/null 2>&1
+		if (( $? != 0 ))
+		then
+			echo "`date` - FAIL: AZMESSAGE not VALID in \"${_oraSid}\" database instance"
+			typeset -i _errCnt=${_errCnt}+1
+		fi
 	fi
 	#
 done <<< $(grep -v -e '^#' -e '^$' ${_confPath})
