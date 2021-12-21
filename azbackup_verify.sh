@@ -79,8 +79,9 @@
 #	TGorman 30jun21 v1.1	silent mode (no output) default; add verbose mode
 #	TGorman	30jul21	v1.2	verbose mode made the default; terse by parm only
 #	TGorman	18aug21	v1.3	clarify errmsg when Oracle instance down
+#	TGorman 21dec21 v1.4	skip past ASM instances in configuration file
 #================================================================================
-_scriptVersion="1.3"
+_scriptVersion="1.4"
 #
 #--------------------------------------------------------------------------------
 # Create shell function to display messages in "verbose" mode;  "silent" mode is
@@ -389,7 +390,7 @@ do
 		fi
 	fi
 	#
-done <<< $(grep -v -e '^#' -e '^$' ${_confPath})
+done <<< $(grep -v -e '^#' -e '^+' -e '^$' ${_confPath})
 #
 #--------------------------------------------------------------------------------
 # Clean up temporary files...
