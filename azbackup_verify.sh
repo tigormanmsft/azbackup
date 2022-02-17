@@ -7,29 +7,29 @@
 #
 # Copyright and license:
 #
-#	Licensed under the Apache License, Version 2.0 (the "License"); you may
-#	not use this file except in compliance with the License.
+#       Licensed under the Apache License, Version 2.0 (the "License"); you may
+#       not use this file except in compliance with the License.
 #
-#	You may obtain a copy of the License at
+#       You may obtain a copy of the License at
 #
-#		http://www.apache.org/licenses/LICENSE-2.0
+#               http://www.apache.org/licenses/LICENSE-2.0
 #
-#	Unless required by applicable law or agreed to in writing, software
-#	distributed under the License is distributed on an "AS IS" basis,
-#	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#       Unless required by applicable law or agreed to in writing, software
+#       distributed under the License is distributed on an "AS IS" basis,
+#       WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
-#	See the License for the specific language governing permissions and
-#	limitations under the License.
+#       See the License for the specific language governing permissions and
+#       limitations under the License.
 #
-#	Copyright (c) 2021 by Microsoft.  All rights reserved.
+#       Copyright (c) 2021 by Microsoft.  All rights reserved.
 #
 # Ownership and responsibility:
 #
-#	This script is offered without warranty by Microsoft Customer Engineering.
-#	Anyone using this script accepts full responsibility for use, effect,
-#	and maintenance.  Please do not contact Microsoft support unless there
-#	is a problem with a supported Azure component used in this script,
-#	such as an "az" (Azure CLI) command.
+#       This script is offered without warranty by Microsoft Customer Engineering.
+#       Anyone using this script accepts full responsibility for use, effect,
+#       and maintenance.  Please do not contact Microsoft support unless there
+#       is a problem with a supported Azure component used in this script,
+#       such as an "az" command.
 #
 # Description:
 #
@@ -37,7 +37,6 @@
 #       Azure VM Backup for integration with one or more Oracle databases on a VM.
 #
 # Command-line Parameters:
-#
 #       Any command-line parameter will place the script into "verbose" mode.  Silent
 #       mode is the default if no command-line parameters are specified.
 #
@@ -82,9 +81,10 @@
 #       TGorman 18aug21 v1.3    clarify errmsg when Oracle instance down
 #       TGorman 21dec21 v1.4    skip past ASM instances in configuration file
 #       TGorman 11feb22 v1.5    added more detail to INFO messages for clarity
+#       TGorman 16feb22 v1.6    fixed looping bug
 #================================================================================
-_scriptVersion="1.5"
-_lastUpdated="11-Feb 2022"
+_scriptVersion="1.6"
+_lastUpdated="16-Feb 2022"
 #
 #--------------------------------------------------------------------------------
 # Create shell function to display messages in "verbose" mode;  "silent" mode is
@@ -312,7 +312,7 @@ echo "exit success"                                     >> ${_tmpSqlScriptFile}
 # the first field containing ORACLE_SID value and the second field containing the
 # ORACLE_HOME directory path...
 #--------------------------------------------------------------------------------
-while read _Line
+grep -v -e '^#' -e '^+' -e '^$' ${_confPath} | while read _Line
 do
         #
         #------------------------------------------------------------------------
@@ -402,7 +402,7 @@ do
                 fi
         fi
         #
-done <<< $(grep -v -e '^#' -e '^+' -e '^$' ${_confPath})
+done
 #
 #--------------------------------------------------------------------------------
 # Clean up temporary files...
